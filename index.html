@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Tutor</title>
+    <title>Chess Board</title>
     <link rel="stylesheet" href="style.css">
-    
+
     <!-- Chess libraries -->
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -14,30 +14,17 @@
 </head>
 <body>
     <div class="container">
-        <!-- Left Side: Chat -->
-        <div class="chat-section">
-            <div class="chat-header">
-                <h2>Chess Coach</h2>
-            </div>
-            <div id="chatMessages" class="chat-messages">
-                <div class="message assistant">
-                    <strong>Coach:</strong> Hello! Set up a position on the board and ask me anything about chess. I can analyze positions, explain moves, or answer questions.
-                </div>
-            </div>
-            <div class="chat-input-container">
-                <input type="text" id="chatInput" placeholder="Ask about the position or chess in general...">
-                <button id="sendBtn">Send</button>
-            </div>
-        </div>
-
-        <!-- Right Side: Chess Board -->
         <div class="board-section">
+            <h1>Chess Board</h1>
             <div class="board-controls">
                 <button id="resetBtn">Reset Board</button>
                 <button id="flipBtn">Flip Board</button>
+                <button id="undoBtn">Undo Move</button>
             </div>
             <div id="board"></div>
-
+            <div class="status-section">
+                <div id="status">White to move</div>
+            </div>
         </div>
     </div>
 
