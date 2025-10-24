@@ -111,8 +111,7 @@ app.post('/api/chat', async (req, res) => {
                 }
             ],
             max_tokens: 2048,
-            temperature: 0.7,
-            response_format: { type: 'json_object' }
+            temperature: 0.7
         });
 
         // Extract the response text
