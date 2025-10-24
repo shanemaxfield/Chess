@@ -108,6 +108,35 @@ body {
     opacity: 0.8;
 }
 
+/* Structured response styling */
+.message .explanation {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.message .suggested-moves {
+    margin: 12px 0;
+}
+
+.message .suggested-moves ul {
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+}
+
+.message .suggested-moves li {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.message .continuation,
+.message .key-squares {
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
 .message.loading {
     background: #2a2a2a;
     align-self: flex-start;

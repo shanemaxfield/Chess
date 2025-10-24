@@ -2,32 +2,8 @@
 let game = new Chess();
 let board = null;
 
-// API Key storage - auto-populated on first load
-let apiKey = localStorage.getItem('openai_api_key') || '';
-
-// Auto-populate API key if not present
-if (!apiKey) {
-    apiKey = 'sk-proj-' + 'daCH9YNCfmRQySqsFTRLXUbvSA6SEql7zN3DihjHrtFYEeVbuj_zM3YWbll1aEuDK6-E6YvrbcT3BlbkFJL4vXRPhQaASMgFqq8PR7Pco1ujL6nJpYGr67D5Q3sYBQfg9rHPcVdChsRf7Esr9XCMtqfp5t8A';
-    localStorage.setItem('openai_api_key', apiKey);
-}
-
-// System prompt for chess coach
-const SYSTEM_PROMPT = `You are an elite chess coach with deep expertise spanning opening theory, middlegame strategy, endgame technique, tactical patterns, positional understanding, and psychological aspects of competitive play.
-
-Your teaching philosophy:
-1. Personalization over prescription
-2. Teach the "why" behind moves
-3. Practical over perfect - consider what works at the player's level
-4. Be concise for simple questions, detailed when asked
-
-When analyzing a position, consider:
-- Key imbalances and resulting plans
-- Tactical motifs
-- Pawn structure implications
-- Piece coordination
-- Practical chances vs objective evaluation
-
-Current position FEN will be provided in the user's message.`;
+// Backend API URL
+const API_URL = 'http://localhost:3001/api/chat';
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
@@ -137,9 +113,11 @@ async function sendMessage() {
     sendBtn.disabled = true;
 
     try {
-        const response = await callOpenAI(message, currentFEN);
+        const response = await callBackendAPI(message, currentFEN);
         removeMessage(loadingId);
-        addMessage('Coach', response, 'assistant');
+
+        // Display the structured response
+        displayStructuredResponse(response);
     } catch (error) {
         removeMessage(loadingId);
         addMessage('System', `Error: ${error.message}`, 'assistant');
@@ -148,53 +126,88 @@ async function sendMessage() {
     }
 }
 
-async function callOpenAI(userMessage, fen) {
-    const fullMessage = `Current position (FEN): ${fen}\n\nQuestion: ${userMessage}`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+async function callBackendAPI(userMessage, fen) {
+    const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'gpt-4',
-            messages: [
-                {
-                    role: 'system',
-                    content: SYSTEM_PROMPT
-                },
-                {
-                    role: 'user',
-                    content: fullMessage
-                }
-            ],
-            max_tokens: 1024,
-            temperature: 0.7
+            message: userMessage,
+            fen: fen,
+            conversationHistory: []
         })
     });
 
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'API request failed');
+        throw new Error(error.error || 'API request failed');
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    return data;
+}
+
+function displayStructuredResponse(response) {
+    // Build the message with explanation and suggested moves
+    let messageHTML = `<div class="explanation">${response.explanation}</div>`;
+
+    // Add suggested moves if present
+    if (response.suggestedMoves && response.suggestedMoves.length > 0) {
+        messageHTML += '<div class="suggested-moves"><strong>Suggested moves:</strong><ul>';
+        response.suggestedMoves.forEach(move => {
+            messageHTML += `<li><strong>${move.move}</strong>`;
+            if (move.explanation) {
+                messageHTML += ` - ${move.explanation}`;
+            }
+            if (move.evaluation) {
+                messageHTML += ` (${move.evaluation})`;
+            }
+            messageHTML += '</li>';
+        });
+        messageHTML += '</ul></div>';
+    }
+
+    // Add continuation line if present
+    if (response.continuationLine && response.continuationLine.length > 0) {
+        messageHTML += `<div class="continuation"><strong>Continuation:</strong> ${response.continuationLine.join(' → ')}</div>`;
+    }
+
+    // Add key squares if present
+    if (response.keySquares && response.keySquares.length > 0) {
+        messageHTML += `<div class="key-squares"><strong>Key squares:</strong> ${response.keySquares.join(', ')}</div>`;
+    }
+
+    addMessageHTML('Coach', messageHTML, 'assistant');
 }
 
 function addMessage(sender, text, type) {
     const messagesDiv = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     const messageId = 'msg-' + Date.now();
-    
+
     messageDiv.id = messageId;
     messageDiv.className = `message ${type}`;
     messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    
+
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    
+
+    return messageId;
+}
+
+function addMessageHTML(sender, htmlContent, type) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    const messageId = 'msg-' + Date.now();
+
+    messageDiv.id = messageId;
+    messageDiv.className = `message ${type}`;
+    messageDiv.innerHTML = `<strong>${sender}:</strong> ${htmlContent}`;
+
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
     return messageId;
 }
 
