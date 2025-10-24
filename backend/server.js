@@ -2,16 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY
+// Initialize OpenAI client
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
 });
 
 // Middleware
@@ -64,7 +64,7 @@ app.get('/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
-        apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY
+        apiKeyConfigured: !!process.env.OPENAI_API_KEY
     });
 });
 
@@ -88,28 +88,35 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // Check if API key is configured
-        if (!process.env.ANTHROPIC_API_KEY) {
+        if (!process.env.OPENAI_API_KEY) {
             return res.status(500).json({ error: 'API key not configured on server' });
         }
 
         console.log(`Processing chat request - Message: "${message.substring(0, 50)}...", FEN: ${fen}`);
 
         // Construct the user message with position context
-        const userMessage = `Current position (FEN): ${fen}\n\nQuestion: ${message}`;
+        const userMessage = `Current position (FEN): ${fen}\n\nQuestion: ${message}\n\nPlease respond in JSON format.`;
 
-        // Call Anthropic API with structured output
-        const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
+        // Call OpenAI API with structured output
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4',
+            messages: [
+                {
+                    role: 'system',
+                    content: SYSTEM_PROMPT
+                },
+                {
+                    role: 'user',
+                    content: userMessage
+                }
+            ],
             max_tokens: 2048,
-            system: SYSTEM_PROMPT,
-            messages: [{
-                role: 'user',
-                content: userMessage
-            }]
+            temperature: 0.7,
+            response_format: { type: 'json_object' }
         });
 
         // Extract the response text
-        const responseText = response.content[0].text;
+        const responseText = response.choices[0].message.content;
 
         // Try to parse as JSON
         let structuredResponse;
@@ -148,12 +155,12 @@ app.post('/api/chat', async (req, res) => {
     } catch (error) {
         console.error('Error processing chat request:', error);
 
-        // Handle Anthropic API specific errors
-        if (error.status === 401) {
+        // Handle OpenAI API specific errors
+        if (error.status === 401 || error.code === 'invalid_api_key') {
             return res.status(500).json({ error: 'Invalid API key configuration' });
         }
 
-        if (error.status === 429) {
+        if (error.status === 429 || error.code === 'rate_limit_exceeded') {
             return res.status(429).json({ error: 'Rate limit exceeded on AI service' });
         }
 
@@ -176,8 +183,8 @@ app.listen(PORT, () => {
     console.log(`Health check: http://localhost:${PORT}/health`);
     console.log(`API endpoint: http://localhost:${PORT}/api/chat`);
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-        console.warn('⚠️  WARNING: ANTHROPIC_API_KEY not found in environment variables');
+    if (!process.env.OPENAI_API_KEY) {
+        console.warn('⚠️  WARNING: OPENAI_API_KEY not found in environment variables');
     } else {
         console.log('✓ API key configured');
     }

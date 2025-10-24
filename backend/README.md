@@ -1,6 +1,6 @@
 # Chess Tutor Backend API
 
-Node.js + Express backend for the Chess Tutor application. Provides AI-powered chess coaching through the Anthropic Claude API.
+Node.js + Express backend for the Chess Tutor application. Provides AI-powered chess coaching through the OpenAI GPT-4 API.
 
 ## Setup
 
@@ -14,9 +14,9 @@ Node.js + Express backend for the Chess Tutor application. Provides AI-powered c
    cp .env.example .env
    ```
 
-   Edit `.env` and add your Anthropic API key:
+   Edit `.env` and add your OpenAI API key:
    ```
-   ANTHROPIC_API_KEY=sk-ant-your-key-here
+   OPENAI_API_KEY=sk-proj-your-key-here
    ```
 
 3. **Run the server:**
@@ -94,7 +94,7 @@ Analyzes a chess position and provides coaching advice.
 
 - **Node.js** - Runtime
 - **Express** - Web framework
-- **Anthropic SDK** - Claude AI integration
+- **OpenAI SDK** - GPT-4 AI integration
 - **express-rate-limit** - Rate limiting
 - **dotenv** - Environment variables
 - **cors** - Cross-origin resource sharing

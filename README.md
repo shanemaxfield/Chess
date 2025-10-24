@@ -1,11 +1,11 @@
 # Chess Tutor
 
-A chess coaching application with an interactive chessboard and AI-powered coaching through Claude. Features a secure backend API and structured responses with move suggestions, analysis, and key squares.
+A chess coaching application with an interactive chessboard and AI-powered coaching through OpenAI GPT-4. Features a secure backend API and structured responses with move suggestions, analysis, and key squares.
 
 ## What's Included
 
 - **Interactive chessboard** - Drag and drop pieces, legal move validation
-- **AI Chess Coach** - Powered by Claude with structured analysis
+- **AI Chess Coach** - Powered by OpenAI GPT-4 with structured analysis
 - **Secure Backend** - Node.js API that protects your API key
 - **Structured Responses** - Get move suggestions, continuations, and key squares
 - **Clean UI** - Dark mode, responsive two-panel layout
@@ -22,9 +22,9 @@ npm install
 cp .env.example .env
 ```
 
-Edit `backend/.env` and add your Anthropic API key:
+Edit `backend/.env` and add your OpenAI API key:
 ```
-ANTHROPIC_API_KEY=sk-ant-your-key-here
+OPENAI_API_KEY=sk-proj-your-key-here
 ```
 
 Start the backend server:
@@ -81,7 +81,7 @@ Chess/
 
 **Backend:**
 - **Node.js + Express** - API server
-- **Anthropic SDK** - Claude AI integration
+- **OpenAI SDK** - GPT-4 AI integration
 - **express-rate-limit** - Request throttling
 - **CORS** - Cross-origin support
 
