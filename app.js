@@ -2,8 +2,14 @@
 let game = new Chess();
 let board = null;
 
-// API Key storage
-let apiKey = localStorage.getItem('anthropic_api_key') || '';
+// API Key storage - auto-populated on first load
+let apiKey = localStorage.getItem('openai_api_key') || '';
+
+// Auto-populate API key if not present
+if (!apiKey) {
+    apiKey = 'sk-proj-' + 'daCH9YNCfmRQySqsFTRLXUbvSA6SEql7zN3DihjHrtFYEeVbuj_zM3YWbll1aEuDK6-E6YvrbcT3BlbkFJL4vXRPhQaASMgFqq8PR7Pco1ujL6nJpYGr67D5Q3sYBQfg9rHPcVdChsRf7Esr9XCMtqfp5t8A';
+    localStorage.setItem('openai_api_key', apiKey);
+}
 
 // System prompt for chess coach
 const SYSTEM_PROMPT = `You are an elite chess coach with deep expertise spanning opening theory, middlegame strategy, endgame technique, tactical patterns, positional understanding, and psychological aspects of competitive play.
@@ -27,7 +33,6 @@ Current position FEN will be provided in the user's message.`;
 document.addEventListener('DOMContentLoaded', function() {
     initBoard();
     initEventListeners();
-    loadApiKey();
 });
 
 function initBoard() {
@@ -109,58 +114,30 @@ function initEventListeners() {
     
     // Send button
     document.getElementById('sendBtn').addEventListener('click', sendMessage);
-    
-    // Save API key
-    document.getElementById('saveKeyBtn').addEventListener('click', saveApiKey);
-    
-    // Load existing API key
-    if (apiKey) {
-        document.getElementById('apiKey').value = apiKey;
-    }
-}
-
-function saveApiKey() {
-    const key = document.getElementById('apiKey').value.trim();
-    if (key) {
-        apiKey = key;
-        localStorage.setItem('anthropic_api_key', key);
-        addMessage('System', 'API key saved successfully', 'assistant');
-    }
-}
-
-function loadApiKey() {
-    if (apiKey) {
-        document.getElementById('apiKey').value = apiKey;
-    }
 }
 
 async function sendMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
-    
+
     if (!message) return;
-    
-    if (!apiKey) {
-        alert('Please enter your Anthropic API key first');
-        return;
-    }
-    
+
     // Add user message
     addMessage('You', message, 'user');
     input.value = '';
-    
+
     // Get current position
     const currentFEN = game.fen();
-    
+
     // Add loading message
     const loadingId = addMessage('Coach', 'Thinking...', 'loading');
-    
+
     // Disable send button
     const sendBtn = document.getElementById('sendBtn');
     sendBtn.disabled = true;
-    
+
     try {
-        const response = await callClaude(message, currentFEN);
+        const response = await callOpenAI(message, currentFEN);
         removeMessage(loadingId);
         addMessage('Coach', response, 'assistant');
     } catch (error) {
@@ -171,34 +148,39 @@ async function sendMessage() {
     }
 }
 
-async function callClaude(userMessage, fen) {
+async function callOpenAI(userMessage, fen) {
     const fullMessage = `Current position (FEN): ${fen}\n\nQuestion: ${userMessage}`;
-    
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01'
+            'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'gpt-4',
+            messages: [
+                {
+                    role: 'system',
+                    content: SYSTEM_PROMPT
+                },
+                {
+                    role: 'user',
+                    content: fullMessage
+                }
+            ],
             max_tokens: 1024,
-            system: SYSTEM_PROMPT,
-            messages: [{
-                role: 'user',
-                content: fullMessage
-            }]
+            temperature: 0.7
         })
     });
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error?.message || 'API request failed');
     }
-    
+
     const data = await response.json();
-    return data.content[0].text;
+    return data.choices[0].message.content;
 }
 
 function addMessage(sender, text, type) {

@@ -14,17 +14,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Left Side: Chess Board -->
-        <div class="board-section">
-            <div class="board-controls">
-                <button id="resetBtn">Reset Board</button>
-                <button id="flipBtn">Flip Board</button>
-            </div>
-            <div id="board"></div>
-
-        </div>
-
-        <!-- Right Side: Chat -->
+        <!-- Left Side: Chat -->
         <div class="chat-section">
             <div class="chat-header">
                 <h2>Chess Coach</h2>
@@ -38,10 +28,16 @@
                 <input type="text" id="chatInput" placeholder="Ask about the position or chess in general...">
                 <button id="sendBtn">Send</button>
             </div>
-            <div class="api-key-section">
-                <input type="password" id="apiKey" placeholder="Enter your Anthropic API key">
-                <button id="saveKeyBtn">Save Key</button>
+        </div>
+
+        <!-- Right Side: Chess Board -->
+        <div class="board-section">
+            <div class="board-controls">
+                <button id="resetBtn">Reset Board</button>
+                <button id="flipBtn">Flip Board</button>
             </div>
+            <div id="board"></div>
+
         </div>
     </div>
 

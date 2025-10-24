@@ -19,6 +19,16 @@ body {
     padding: 20px;
 }
 
+/* Chat Section */
+.chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #242424;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
 /* Board Section */
 .board-section {
     flex: 0 0 600px;
@@ -51,16 +61,6 @@ body {
 
 .board-controls button:hover {
     background: #353535;
-}
-
-/* Chat Section */
-.chat-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #242424;
-    border-radius: 10px;
-    overflow: hidden;
 }
 
 .chat-header {
@@ -157,39 +157,6 @@ body {
 #sendBtn:disabled {
     background: #404040;
     cursor: not-allowed;
-}
-
-.api-key-section {
-    display: flex;
-    gap: 10px;
-    padding: 15px 20px;
-    background: #1a1a1a;
-    border-top: 1px solid #404040;
-}
-
-#apiKey {
-    flex: 1;
-    padding: 10px;
-    background: #2a2a2a;
-    border: 1px solid #404040;
-    color: #e0e0e0;
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-#saveKeyBtn {
-    padding: 10px 20px;
-    background: #2a2a2a;
-    border: 1px solid #404040;
-    color: #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s;
-}
-
-#saveKeyBtn:hover {
-    background: #353535;
 }
 
 /* Scrollbar styling */
