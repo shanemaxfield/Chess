@@ -134,21 +134,53 @@ app.post('/api/chat', async (req, res) => {
             };
         }
 
+        // Normalize suggested moves to ensure consistent format
+        const normalizeSuggestedMoves = (moves) => {
+            if (!Array.isArray(moves)) return [];
+            return moves.map(move => {
+                if (typeof move === 'string') {
+                    return { move: move, explanation: '', evaluation: '' };
+                }
+                return {
+                    move: move.move || move.notation || '',
+                    from: move.from || '',
+                    to: move.to || '',
+                    explanation: move.explanation || move.reason || '',
+                    evaluation: move.evaluation || move.score || ''
+                };
+            }).filter(m => m.move); // Remove empty moves
+        };
+
+        // Normalize continuation line to ensure it's an array of strings
+        const normalizeContinuationLine = (line) => {
+            if (!Array.isArray(line)) return [];
+            return line.map(move => {
+                if (typeof move === 'string') return move;
+                return move.move || move.notation || '';
+            }).filter(m => m); // Remove empty strings
+        };
+
+        // Normalize key squares to ensure it's an array of strings
+        const normalizeKeySquares = (squares) => {
+            if (!Array.isArray(squares)) return [];
+            return squares.map(sq => String(sq)).filter(s => s);
+        };
+
         // Validate and ensure required fields exist
         const validatedResponse = {
             explanation: structuredResponse.explanation || responseText,
-            suggestedMoves: Array.isArray(structuredResponse.suggestedMoves)
-                ? structuredResponse.suggestedMoves
-                : [],
-            keySquares: Array.isArray(structuredResponse.keySquares)
-                ? structuredResponse.keySquares
-                : [],
-            continuationLine: Array.isArray(structuredResponse.continuationLine)
-                ? structuredResponse.continuationLine
-                : []
+            suggestedMoves: normalizeSuggestedMoves(structuredResponse.suggestedMoves),
+            keySquares: normalizeKeySquares(structuredResponse.keySquares),
+            continuationLine: normalizeContinuationLine(structuredResponse.continuationLine)
         };
 
         console.log('Successfully processed request');
+        console.log('Response structure:', {
+            explanation: validatedResponse.explanation.substring(0, 50) + '...',
+            suggestedMovesCount: validatedResponse.suggestedMoves.length,
+            keySquaresCount: validatedResponse.keySquares.length,
+            continuationLineCount: validatedResponse.continuationLine.length
+        });
         res.json(validatedResponse);
 
     } catch (error) {
